@@ -1,0 +1,391 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, viewport-fit=cover"
+    />
+    <title>ZhasLab v1.0 Demo — Калькулятор себестоимости</title>
+    <meta
+      name="description"
+      content="Калькулятор себестоимости коктейлей для барменов. Ингредиенты, заготовки, рецепты."
+    />
+    <meta name="theme-color" content="#08090c" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="icon" type="image/svg+xml" href="/src/assets/zhaslab-logo.svg" />
+    <link rel="stylesheet" href="/src/style.css" />
+  </head>
+  <body>
+    <div class="app">
+      <header class="header">
+        <div class="header__brand">
+          <div class="header__logo" aria-hidden="true">
+            <svg width="28" height="28" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+              <path
+                d="M12 4h8v4h-8V4z"
+                stroke="currentColor"
+                stroke-width="1.4"
+                stroke-linejoin="round"
+              />
+              <path
+                d="M12 8v5.2L8.5 22.5c0 0 3.2 3.5 7.5 3.5s7.5-3.5 7.5-3.5L20 13.2V8"
+                stroke="currentColor"
+                stroke-width="1.4"
+                stroke-linejoin="round"
+                stroke-linecap="round"
+              />
+              <path
+                d="M10 15.5h12"
+                stroke="currentColor"
+                stroke-width="1"
+                stroke-linecap="round"
+                opacity="0.45"
+              />
+              <circle cx="16" cy="18.5" r="1.1" fill="currentColor" opacity="0.65" />
+              <path
+                d="M21.5 6.5l5.5 16.5"
+                stroke="currentColor"
+                stroke-width="1"
+                stroke-linecap="round"
+                opacity="0.4"
+              />
+              <circle cx="27.5" cy="24" r="1.2" fill="currentColor" opacity="0.4" />
+            </svg>
+          </div>
+          <div>
+            <h1 class="header__title">ZhasLab</h1>
+            <p class="header__subtitle">Калькулятор себестоимости коктейлей</p>
+          </div>
+        </div>
+        <nav class="tabs" role="tablist">
+          <button
+            class="tabs__btn tabs__btn--active"
+            data-tab="home"
+            role="tab"
+            aria-selected="true"
+            aria-controls="home-panel"
+            id="tab-home"
+          >
+            Главная
+          </button>
+          <button
+            class="tabs__btn"
+            data-tab="ingredients"
+            role="tab"
+            aria-selected="false"
+            aria-controls="ingredients-panel"
+            id="tab-ingredients"
+          >
+            Ингредиенты
+          </button>
+          <button
+            class="tabs__btn"
+            data-tab="preparations"
+            role="tab"
+            aria-selected="false"
+            aria-controls="preparations-panel"
+            id="tab-preparations"
+          >
+            Заготовки
+          </button>
+          <button
+            class="tabs__btn"
+            data-tab="cocktails"
+            role="tab"
+            aria-selected="false"
+            aria-controls="cocktails-panel"
+            id="tab-cocktails"
+          >
+            Коктейли
+          </button>
+        </nav>
+      </header>
+
+      <main class="main">
+        <section id="home-panel" class="panel panel--active" role="tabpanel" aria-labelledby="tab-home">
+          <div id="home-dashboard" class="dashboard"></div>
+        </section>
+
+        <section id="ingredients-panel" class="panel" role="tabpanel" aria-labelledby="tab-ingredients" hidden>
+          <div class="panel__grid">
+            <div class="card card--form">
+              <h2 class="card__title" id="ingredient-form-title">Добавить ингредиент</h2>
+              <form id="ingredient-form" class="form" novalidate>
+                <input type="hidden" id="ingredient-id" />
+                <div class="form__group">
+                  <label class="form__label" for="ingredient-name">Название</label>
+                  <input
+                    class="form__input"
+                    type="text"
+                    id="ingredient-name"
+                    placeholder="Например, Джин Beefeater"
+                    required
+                  />
+                </div>
+                <div class="form__group">
+                  <label class="form__label" for="ingredient-category">Категория</label>
+                  <select class="form__select" id="ingredient-category" required></select>
+                </div>
+                <div class="form__row">
+                  <div class="form__group">
+                    <label class="form__label" for="ingredient-volume">Объём бутылки (мл)</label>
+                    <input
+                      class="form__input"
+                      type="number"
+                      id="ingredient-volume"
+                      min="1"
+                      step="1"
+                      placeholder="700"
+                      required
+                    />
+                  </div>
+                  <div class="form__group">
+                    <label class="form__label" for="ingredient-price">Цена бутылки (₸)</label>
+                    <input
+                      class="form__input"
+                      type="number"
+                      id="ingredient-price"
+                      min="0"
+                      step="0.01"
+                      placeholder="25000"
+                      required
+                    />
+                  </div>
+                </div>
+                <div class="form__preview" id="ingredient-preview" hidden>
+                  <span class="form__preview-label">Стоимость 1 мл:</span>
+                  <span class="form__preview-value" id="ingredient-cost-per-ml">—</span>
+                </div>
+                <div class="form__actions">
+                  <button type="submit" class="btn btn--primary" id="ingredient-submit">
+                    Добавить
+                  </button>
+                  <button type="button" class="btn btn--secondary" id="ingredient-import">
+                    <svg class="btn__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path
+                        d="M12 3v12m0 0l4-4m-4 4l-4-4M5 21h14"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                      />
+                    </svg>
+                    Импорт ингредиентов
+                  </button>
+                  <input
+                    type="file"
+                    id="ingredient-import-input"
+                    accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                    hidden
+                  />
+                  <button type="button" class="btn btn--ghost" id="ingredient-cancel" hidden>
+                    Отмена
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <div class="card card--list">
+              <div class="card__header">
+                <h2 class="card__title">Список ингредиентов</h2>
+                <span class="badge" id="ingredients-count">0</span>
+              </div>
+              <div class="filters" id="ingredients-filters">
+                <div class="search">
+                  <svg class="search__icon" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                    <circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="2" />
+                    <path d="M20 20l-3-3" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
+                  </svg>
+                  <input
+                    type="search"
+                    id="ingredient-search"
+                    class="search__input"
+                    placeholder="Поиск по названию..."
+                    autocomplete="off"
+                  />
+                  <button
+                    type="button"
+                    class="search__clear"
+                    id="ingredient-search-clear"
+                    aria-label="Очистить поиск"
+                    hidden
+                  >
+                    ✕
+                  </button>
+                </div>
+                <div class="filter">
+                  <select id="ingredient-category-filter" class="filter__select" aria-label="Фильтр по категории">
+                    <option value="">Все категории</option>
+                  </select>
+                </div>
+              </div>
+              <div id="ingredients-list" class="list"></div>
+            </div>
+          </div>
+        </section>
+
+        <section id="preparations-panel" class="panel" role="tabpanel" aria-labelledby="tab-preparations" hidden>
+          <div class="panel__grid">
+            <div class="card card--form">
+              <h2 class="card__title" id="preparation-form-title">Создать заготовку</h2>
+              <form id="preparation-form" class="form" novalidate>
+                <input type="hidden" id="preparation-id" />
+                <div class="form__group">
+                  <label class="form__label" for="preparation-name">Название заготовки</label>
+                  <input
+                    class="form__input"
+                    type="text"
+                    id="preparation-name"
+                    placeholder="Например, Berry Bomb Cordial"
+                    required
+                  />
+                </div>
+
+                <div class="form__group">
+                  <label class="form__label">Состав</label>
+                  <div id="preparation-ingredients" class="cocktail-ingredients"></div>
+                  <button type="button" class="btn btn--secondary btn--sm" id="add-preparation-ingredient">
+                    + Добавить ингредиент
+                  </button>
+                </div>
+
+                <div class="form__group">
+                  <label class="form__label" for="preparation-volume">Итоговый объём (мл)</label>
+                  <input
+                    class="form__input"
+                    type="number"
+                    id="preparation-volume"
+                    min="1"
+                    step="1"
+                    placeholder="1000"
+                    required
+                  />
+                </div>
+
+                <div class="form__preview" id="preparation-cost-preview" hidden>
+                  <span class="form__preview-label">Себестоимость заготовки:</span>
+                  <span class="form__preview-value" id="preparation-total-cost">—</span>
+                </div>
+
+                <div class="form__preview" id="preparation-ml-preview" hidden>
+                  <span class="form__preview-label">Стоимость 1 мл:</span>
+                  <span class="form__preview-value" id="preparation-cost-per-ml">—</span>
+                </div>
+
+                <div class="form__actions">
+                  <button type="submit" class="btn btn--primary" id="preparation-submit">
+                    Создать
+                  </button>
+                  <button type="button" class="btn btn--ghost" id="preparation-cancel" hidden>
+                    Отмена
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <div class="card card--list">
+              <div class="card__header">
+                <h2 class="card__title">Мои заготовки</h2>
+                <span class="badge" id="preparations-count">0</span>
+              </div>
+              <div id="preparations-list" class="list"></div>
+            </div>
+          </div>
+        </section>
+
+        <section id="cocktails-panel" class="panel" role="tabpanel" aria-labelledby="tab-cocktails" hidden>
+          <div class="panel__grid">
+            <div class="card card--form">
+              <h2 class="card__title" id="cocktail-form-title">Создать коктейль</h2>
+              <form id="cocktail-form" class="form" novalidate>
+                <input type="hidden" id="cocktail-id" />
+                <div class="form__group">
+                  <label class="form__label" for="cocktail-name">Название коктейля</label>
+                  <input
+                    class="form__input"
+                    type="text"
+                    id="cocktail-name"
+                    placeholder="Например, Негрони"
+                    required
+                  />
+                </div>
+
+                <div class="form__group">
+                  <label class="form__label">Ингредиенты и заготовки</label>
+                  <div id="cocktail-ingredients" class="cocktail-ingredients"></div>
+                  <button type="button" class="btn btn--secondary btn--sm" id="add-cocktail-ingredient">
+                    + Добавить ингредиент
+                  </button>
+                </div>
+
+                <div class="form__preview form__preview--total" id="cocktail-preview" hidden>
+                  <span class="form__preview-label">Себестоимость коктейля:</span>
+                  <span class="form__preview-value form__preview-value--large" id="cocktail-total-cost">
+                    —
+                  </span>
+                </div>
+
+                <div class="form__actions">
+                  <button type="submit" class="btn btn--primary" id="cocktail-submit">
+                    Создать
+                  </button>
+                  <button type="button" class="btn btn--ghost" id="cocktail-cancel" hidden>
+                    Отмена
+                  </button>
+                </div>
+              </form>
+            </div>
+
+            <div class="card card--list">
+              <div class="card__header">
+                <h2 class="card__title">Мои коктейли</h2>
+                <span class="badge" id="cocktails-count">0</span>
+              </div>
+              <div id="cocktails-list" class="list"></div>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      <footer class="app-footer">
+        <div class="app-footer__logo" aria-hidden="true">
+          <svg width="24" height="24" viewBox="0 0 32 32" fill="none">
+            <path d="M12 4h8v4h-8V4z" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round" />
+            <path
+              d="M12 8v5.2L8.5 22.5c0 0 3.2 3.5 7.5 3.5s7.5-3.5 7.5-3.5L20 13.2V8"
+              stroke="currentColor"
+              stroke-width="1.4"
+              stroke-linejoin="round"
+              stroke-linecap="round"
+            />
+            <path d="M10 15.5h12" stroke="currentColor" stroke-width="1" stroke-linecap="round" opacity="0.45" />
+            <circle cx="16" cy="18.5" r="1.1" fill="currentColor" opacity="0.65" />
+          </svg>
+        </div>
+        <p class="app-footer__brand">ZHASLAB</p>
+        <p class="app-footer__version">Версия 1.0 Demo</p>
+        <p class="app-footer__tagline">Разработано для барменов.</p>
+        <p class="app-footer__desc">
+          Приложение помогает рассчитывать себестоимость ингредиентов, заготовок и коктейлей.
+        </p>
+      </footer>
+    </div>
+
+    <div id="toast-container" class="toast-container" aria-live="polite"></div>
+
+    <input
+      type="file"
+      id="backup-import-input"
+      accept=".json,application/json"
+      hidden
+    />
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>

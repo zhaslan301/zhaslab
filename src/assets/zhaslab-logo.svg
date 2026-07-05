@@ -1,0 +1,36 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" fill="none" aria-hidden="true">
+  <!-- Flask neck -->
+  <path
+    d="M12 4h8v4h-8V4z"
+    stroke="currentColor"
+    stroke-width="1.4"
+    stroke-linejoin="round"
+  />
+  <!-- Flask body: lab beaker + bar coupe silhouette -->
+  <path
+    d="M12 8v5.2L8.5 22.5c0 0 3.2 3.5 7.5 3.5s7.5-3.5 7.5-3.5L20 13.2V8"
+    stroke="currentColor"
+    stroke-width="1.4"
+    stroke-linejoin="round"
+    stroke-linecap="round"
+  />
+  <!-- Liquid meniscus -->
+  <path
+    d="M10 15.5h12"
+    stroke="currentColor"
+    stroke-width="1"
+    stroke-linecap="round"
+    opacity="0.45"
+  />
+  <!-- Reaction bubble (lab) -->
+  <circle cx="16" cy="18.5" r="1.1" fill="currentColor" opacity="0.65" />
+  <!-- Bar spoon (bar) -->
+  <path
+    d="M21.5 6.5l5.5 16.5"
+    stroke="currentColor"
+    stroke-width="1"
+    stroke-linecap="round"
+    opacity="0.4"
+  />
+  <circle cx="27.5" cy="24" r="1.2" fill="currentColor" opacity="0.4" />
+</svg>
