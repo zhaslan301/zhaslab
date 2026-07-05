@@ -1235,6 +1235,18 @@ body::before {
   color: var(--text-muted);
 }
 
+.dashboard__demo-text {
+  margin: 0 0 var(--space-lg);
+  font-size: 0.875rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+}
+
+.dashboard__demo .btn {
+  width: 100%;
+  max-width: 320px;
+}
+
 .dashboard__backup-actions {
   display: flex;
   flex-wrap: wrap;
@@ -1522,6 +1534,10 @@ body::before {
 
   .dashboard__backup-actions {
     flex-direction: column;
+  }
+
+  .dashboard__demo .btn {
+    max-width: none;
   }
 
   .dashboard__backup-actions .btn {

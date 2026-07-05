@@ -8,6 +8,7 @@ const state = {
   ingredients: [],
   preparations: [],
   cocktails: [],
+  demoSeeded: false,
   editingIngredientId: null,
   editingPreparationId: null,
   editingCocktailId: null,
@@ -65,6 +66,7 @@ function loadData() {
     state.ingredients = (data.ingredients ?? []).map(normalizeIngredient).filter(Boolean);
     state.preparations = (data.preparations ?? []).map(normalizePreparation).filter(Boolean);
     state.cocktails = (data.cocktails ?? []).map(normalizeCocktail).filter(Boolean);
+    state.demoSeeded = data.demoSeeded === true;
     backfillIngredientTimestamps();
   } catch {
     state.ingredients = [];
@@ -190,6 +192,7 @@ function saveData() {
       STORAGE_KEY,
       JSON.stringify({
         version: DATA_VERSION,
+        demoSeeded: state.demoSeeded,
         ingredients: state.ingredients,
         preparations: state.preparations,
         cocktails: state.cocktails,
@@ -305,6 +308,172 @@ function isPreparationItem(item) {
   return Boolean(item.preparationId);
 }
 
+function findPreparationByName(name) {
+  const normalized = name.trim().toLowerCase();
+  return state.preparations.find((p) => p.name.toLowerCase() === normalized);
+}
+
+function findCocktailByName(name) {
+  const normalized = name.trim().toLowerCase();
+  return state.cocktails.find((c) => c.name.toLowerCase() === normalized);
+}
+
+function ensureDemoIngredient({ key, name, category, bottleVolume, bottlePrice }, ids, createdAt) {
+  const existing = findIngredientByName(name);
+  if (existing) {
+    ids[key] = existing.id;
+    return false;
+  }
+
+  const ingredient = {
+    id: generateId(),
+    name,
+    category,
+    bottleVolume,
+    bottlePrice,
+    createdAt,
+  };
+  state.ingredients.push(ingredient);
+  ids[key] = ingredient.id;
+  return true;
+}
+
+const DEMO_INGREDIENTS = [
+  { key: 'gin', name: 'Джин Beefeater', category: 'Джин', bottleVolume: 700, bottlePrice: 18500 },
+  { key: 'campari', name: 'Campari', category: 'Биттер', bottleVolume: 700, bottlePrice: 11500 },
+  {
+    key: 'vermouth',
+    name: 'Vermouth Cinzano Rosso',
+    category: 'Вермут',
+    bottleVolume: 1000,
+    bottlePrice: 8500,
+  },
+  {
+    key: 'whiskey',
+    name: "Jack Daniel's №7",
+    category: 'Виски',
+    bottleVolume: 700,
+    bottlePrice: 16800,
+  },
+  { key: 'lemon', name: 'Сок лимона', category: 'Сок', bottleVolume: 1000, bottlePrice: 2800 },
+  {
+    key: 'syrup',
+    name: 'Сироп сахарный 1:1',
+    category: 'Сироп',
+    bottleVolume: 1000,
+    bottlePrice: 3200,
+  },
+  { key: 'egg', name: 'Яичный белок', category: 'Другое', bottleVolume: 1000, bottlePrice: 1800 },
+  {
+    key: 'tequila',
+    name: 'Tequila Olmeca Silver',
+    category: 'Текила',
+    bottleVolume: 700,
+    bottlePrice: 12500,
+  },
+  { key: 'cointreau', name: 'Cointreau', category: 'Ликер', bottleVolume: 700, bottlePrice: 19000 },
+  {
+    key: 'raspberry',
+    name: 'Малиновое пюре',
+    category: 'Пюре',
+    bottleVolume: 1000,
+    bottlePrice: 4500,
+  },
+];
+
+const DEMO_PREPARATION = {
+  name: 'Berry Bomb Cordial',
+  totalVolume: 500,
+  items: [
+    { ingredientKey: 'raspberry', amountMl: 200 },
+    { ingredientKey: 'syrup', amountMl: 120 },
+    { ingredientKey: 'lemon', amountMl: 40 },
+  ],
+};
+
+const DEMO_COCKTAILS = [
+  {
+    name: 'Negroni',
+    items: [
+      { ingredientKey: 'gin', amountMl: 30 },
+      { ingredientKey: 'campari', amountMl: 30 },
+      { ingredientKey: 'vermouth', amountMl: 30 },
+    ],
+  },
+  {
+    name: 'Whiskey Sour',
+    items: [
+      { ingredientKey: 'whiskey', amountMl: 50 },
+      { ingredientKey: 'lemon', amountMl: 25 },
+      { ingredientKey: 'syrup', amountMl: 20 },
+      { ingredientKey: 'egg', amountMl: 25 },
+    ],
+  },
+  {
+    name: 'Margarita',
+    items: [
+      { ingredientKey: 'tequila', amountMl: 50 },
+      { ingredientKey: 'cointreau', amountMl: 25 },
+      { ingredientKey: 'lemon', amountMl: 25 },
+    ],
+  },
+];
+
+function loadDemoData() {
+  if (state.demoSeeded) {
+    showToast('Демо-данные уже добавлены', 'error');
+    return;
+  }
+
+  const ids = {};
+  const baseTime = Date.now();
+  let addedIngredients = 0;
+
+  DEMO_INGREDIENTS.forEach((item, index) => {
+    if (
+      ensureDemoIngredient(item, ids, baseTime - index)
+    ) {
+      addedIngredients += 1;
+    }
+  });
+
+  if (!findPreparationByName(DEMO_PREPARATION.name)) {
+    state.preparations.push({
+      id: generateId(),
+      name: DEMO_PREPARATION.name,
+      totalVolume: DEMO_PREPARATION.totalVolume,
+      items: DEMO_PREPARATION.items.map((item) => ({
+        ingredientId: ids[item.ingredientKey],
+        amountMl: item.amountMl,
+      })),
+    });
+  }
+
+  DEMO_COCKTAILS.forEach((cocktail) => {
+    if (findCocktailByName(cocktail.name)) return;
+
+    state.cocktails.push({
+      id: generateId(),
+      name: cocktail.name,
+      items: cocktail.items.map((item) => ({
+        ingredientId: ids[item.ingredientKey],
+        amountMl: item.amountMl,
+      })),
+    });
+  });
+
+  state.demoSeeded = true;
+  saveData();
+  renderIngredientsList();
+  refreshDependentViews();
+  renderHomeDashboard();
+  showToast(
+    addedIngredients > 0
+      ? `Демо-данные добавлены (${addedIngredients} ингредиентов, 1 заготовка, 3 коктейля)`
+      : 'Демо-данные добавлены'
+  );
+}
+
 function findIngredientByName(name) {
   const normalized = name.trim().toLowerCase();
   return state.ingredients.find((i) => i.name.toLowerCase() === normalized);
@@ -369,6 +538,8 @@ const EMPTY_STATE_ARROW = `<svg class="empty-state__arrow" width="18" height="18
 const ICON_EXPORT = `<svg class="btn__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v12m0 0l4-4m-4 4l-4-4M5 21h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
 const ICON_IMPORT = `<svg class="btn__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 21V9m0 0l4 4m-4-4l-4 4M5 7h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+
+const ICON_DEMO = `<svg class="btn__icon" width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3c-4.5 0-8 1.5-8 3.5S7.5 10 12 10s8-1.5 8-3.5S16.5 3 12 3zM4 10.5c0 2 3.6 3.5 8 3.5s8-1.5 8-3.5M4 15c0 2 3.6 3.5 8 3.5s8-1.5 8-3.5M4 19.5V18c0 2 3.6 3.5 8 3.5s8-1.5 8-3.5v1.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
 
 const ICON_EDIT = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 20h4l10.5-10.5a2.1 2.1 0 0 0-3-3L5 17v3z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg>`;
 
@@ -550,6 +721,24 @@ function renderHomeDashboard() {
       <div class="dashboard__recent-list">${recentHtml}</div>
     </article>
 
+    <article class="card dashboard__demo">
+      <div class="card__header">
+        <h2 class="card__title">Быстрый старт</h2>
+      </div>
+      <p class="dashboard__demo-text">
+        10 ингредиентов, заготовка Berry Bomb Cordial и коктейли Negroni, Whiskey Sour, Margarita с реалистичными ценами в ₸.
+      </p>
+      <button
+        type="button"
+        class="btn btn--secondary"
+        id="load-demo-data-btn"
+        ${state.demoSeeded ? 'disabled' : ''}
+      >
+        ${ICON_DEMO}
+        ${state.demoSeeded ? 'Демо-данные уже добавлены' : 'Заполнить демо-данными'}
+      </button>
+    </article>
+
     <article class="card dashboard__backup">
       <div class="card__header">
         <h2 class="card__title">Резервная копия</h2>
@@ -571,6 +760,7 @@ function renderHomeDashboard() {
   `;
 
   bindBackupControls();
+  bindDemoControls();
 }
 
 const BACKUP_VERSION = 1;
@@ -580,6 +770,7 @@ function createBackupPayload() {
     version: BACKUP_VERSION,
     app: 'zhaslab',
     appVersion: APP_VERSION,
+    demoSeeded: state.demoSeeded,
     exportedAt: new Date().toISOString(),
     ingredients: state.ingredients,
     preparations: state.preparations,
@@ -648,6 +839,7 @@ async function handleBackupImport(file) {
   state.ingredients = backup.ingredients;
   state.preparations = backup.preparations;
   state.cocktails = backup.cocktails;
+  state.demoSeeded = raw.demoSeeded === true;
   state.editingIngredientId = null;
   state.editingPreparationId = null;
   state.editingCocktailId = null;
@@ -677,6 +869,14 @@ function bindBackupControls() {
       document.getElementById('backup-import-input')?.click();
     });
   }
+}
+
+function bindDemoControls() {
+  const btn = document.getElementById('load-demo-data-btn');
+  if (!btn || btn.dataset.bound || btn.disabled) return;
+
+  btn.dataset.bound = 'true';
+  btn.addEventListener('click', loadDemoData);
 }
 
 function initBackupImport() {
