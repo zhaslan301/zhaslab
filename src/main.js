@@ -1948,6 +1948,16 @@ function pluralize(count, [one, few, many]) {
   return many;
 }
 
+// ─── PWA ─────────────────────────────────────────────────────────────────────
+
+function registerServiceWorker() {
+  if (!('serviceWorker' in navigator)) return;
+
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
+}
+
 // ─── Init ────────────────────────────────────────────────────────────────────
 
 function init() {
@@ -1963,6 +1973,7 @@ function init() {
   renderCocktailsList();
   resetPreparationForm();
   resetCocktailForm();
+  registerServiceWorker();
 }
 
 init();
